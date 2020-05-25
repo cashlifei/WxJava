@@ -1,13 +1,13 @@
 package cn.binarywang.wx.miniapp.config.impl;
 
-import java.io.File;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
 import cn.binarywang.wx.miniapp.config.WxMaConfig;
 import cn.binarywang.wx.miniapp.util.json.WxMaGsonBuilder;
 import me.chanjar.weixin.common.bean.WxAccessToken;
 import me.chanjar.weixin.common.util.http.apache.ApacheHttpClientBuilder;
+
+import java.io.File;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 基于内存的微信配置provider，在实际生产环境中应该将这些配置持久化
@@ -15,38 +15,54 @@ import me.chanjar.weixin.common.util.http.apache.ApacheHttpClientBuilder;
  * @author <a href="https://github.com/binarywang">Binary Wang</a>
  */
 public class WxMaDefaultConfigImpl implements WxMaConfig {
-  private volatile String msgDataFormat;
   protected volatile String appid;
-  private volatile String secret;
   protected volatile String token;
+  /**
+   * 小程序原始ID
+   */
+  protected volatile String originalId;
+  protected Lock accessTokenLock = new ReentrantLock();
+  /**
+   * 临时文件目录.
+   */
+  protected volatile File tmpDirFile;
+  private volatile String msgDataFormat;
+  private volatile String secret;
   private volatile String accessToken;
   private volatile String aesKey;
   private volatile long expiresTime;
-
+  /**
+   * 云环境ID
+   */
+  private volatile String cloudEnv;
   private volatile String httpProxyHost;
   private volatile int httpProxyPort;
   private volatile String httpProxyUsername;
   private volatile String httpProxyPassword;
-
   private volatile String jsapiTicket;
   private volatile long jsapiTicketExpiresTime;
-
   /**
    * 微信卡券的ticket单独缓存.
    */
   private volatile String cardApiTicket;
   private volatile long cardApiTicketExpiresTime;
-
-  protected Lock accessTokenLock = new ReentrantLock();
-  private Lock jsapiTicketLock = new ReentrantLock();
-  private Lock cardApiTicketLock = new ReentrantLock();
+  protected volatile Lock jsapiTicketLock = new ReentrantLock();
+  protected volatile Lock cardApiTicketLock = new ReentrantLock();
+  private volatile ApacheHttpClientBuilder apacheHttpClientBuilder;
 
   /**
-   * 临时文件目录.
+   * 会过期的数据提前过期时间，默认预留200秒的时间
    */
-  protected volatile File tmpDirFile;
+  protected long expiresAheadInMillis(int expiresInSeconds) {
+    return System.currentTimeMillis() + (expiresInSeconds - 200) * 1000L;
+  }
 
-  private volatile ApacheHttpClientBuilder apacheHttpClientBuilder;
+  /**
+   * 判断 expiresTime 是否已经过期
+   */
+  protected boolean isExpired(long expiresTime) {
+    return System.currentTimeMillis() > expiresTime;
+  }
 
   @Override
   public String getAccessToken() {
@@ -68,7 +84,7 @@ public class WxMaDefaultConfigImpl implements WxMaConfig {
 
   @Override
   public boolean isAccessTokenExpired() {
-    return System.currentTimeMillis() > this.expiresTime;
+    return isExpired(this.expiresTime);
   }
 
   @Override
@@ -78,8 +94,8 @@ public class WxMaDefaultConfigImpl implements WxMaConfig {
 
   @Override
   public synchronized void updateAccessToken(String accessToken, int expiresInSeconds) {
-    this.accessToken = accessToken;
-    this.expiresTime = System.currentTimeMillis() + (expiresInSeconds - 200) * 1000L;
+    setAccessToken(accessToken);
+    setExpiresTime(expiresAheadInMillis(expiresInSeconds));
   }
 
   @Override
@@ -94,7 +110,7 @@ public class WxMaDefaultConfigImpl implements WxMaConfig {
 
   @Override
   public boolean isJsapiTicketExpired() {
-    return System.currentTimeMillis() > this.jsapiTicketExpiresTime;
+    return isExpired(this.jsapiTicketExpiresTime);
   }
 
   @Override
@@ -105,8 +121,7 @@ public class WxMaDefaultConfigImpl implements WxMaConfig {
   @Override
   public void updateJsapiTicket(String jsapiTicket, int expiresInSeconds) {
     this.jsapiTicket = jsapiTicket;
-    // 预留200秒的时间
-    this.jsapiTicketExpiresTime = System.currentTimeMillis() + (expiresInSeconds - 200) * 1000L;
+    this.jsapiTicketExpiresTime = expiresAheadInMillis(expiresInSeconds);
   }
 
 
@@ -122,7 +137,7 @@ public class WxMaDefaultConfigImpl implements WxMaConfig {
 
   @Override
   public boolean isCardApiTicketExpired() {
-    return System.currentTimeMillis() > this.cardApiTicketExpiresTime;
+    return isExpired(this.cardApiTicketExpiresTime);
   }
 
   @Override
@@ -133,8 +148,7 @@ public class WxMaDefaultConfigImpl implements WxMaConfig {
   @Override
   public void updateCardApiTicket(String cardApiTicket, int expiresInSeconds) {
     this.cardApiTicket = cardApiTicket;
-    // 预留200秒的时间
-    this.cardApiTicketExpiresTime = System.currentTimeMillis() + (expiresInSeconds - 200) * 1000L;
+    this.cardApiTicketExpiresTime = expiresAheadInMillis(expiresInSeconds);
   }
 
   @Override
@@ -176,6 +190,24 @@ public class WxMaDefaultConfigImpl implements WxMaConfig {
 
   public void setAesKey(String aesKey) {
     this.aesKey = aesKey;
+  }
+
+  @Override
+  public String getOriginalId() {
+    return originalId;
+  }
+
+  public void setOriginalId(String originalId) {
+    this.originalId = originalId;
+  }
+
+  @Override
+  public String getCloudEnv() {
+    return this.cloudEnv;
+  }
+
+  public void setCloudEnv(String cloudEnv) {
+    this.cloudEnv = cloudEnv;
   }
 
   @Override

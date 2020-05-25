@@ -76,12 +76,12 @@ public class ProfitSharingServiceImpl implements ProfitSharingService {
 
   @Override
   public ProfitSharingQueryResult profitSharingQuery(ProfitSharingQueryRequest request) throws WxPayException {
-    if (true) throw new WxPayException("暂不支持，微信一直返回签名失败");
     request.checkAndSign(this.payService.getConfig());
     String url = this.payService.getPayBaseUrl() + "/pay/profitsharingquery";
 
     String responseContent = this.payService.post(url, request.toXML(), true);
     ProfitSharingQueryResult result = BaseWxPayResult.fromXML(responseContent, ProfitSharingQueryResult.class);
+    result.formatReceivers();
     result.checkResult(this.payService, request.getSignType(), true);
     return result;
   }

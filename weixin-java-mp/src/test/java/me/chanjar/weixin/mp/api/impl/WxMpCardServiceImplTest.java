@@ -1,5 +1,6 @@
 package me.chanjar.weixin.mp.api.impl;
 
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import me.chanjar.weixin.common.bean.WxCardApiSignature;
 import me.chanjar.weixin.common.error.WxErrorException;
@@ -134,7 +135,7 @@ public class WxMpCardServiceImplTest {
     base.setCustomUrlSubTitle("副标题tip");
     base.setPromotionUrlName("更多优惠");
     base.setPromotionUrl("http://www.qq.com");
-    base.setLocationIdList("1234");
+    base.setLocationIdList(Lists.newArrayList("1234"));
 
     //团购券
     WxMpCardCreateRequest grouponMessage = new WxMpCardCreateRequest();
@@ -226,5 +227,14 @@ public class WxMpCardServiceImplTest {
 
   @Test
   public void testCreateLandingPage() {
+  }
+
+  @Test
+  public void testGetUserCardList() throws WxErrorException {
+    String openId = "ou7Gr5sJZgFGgj38sRCNQg5pc3Fc";
+    String cardId = "pu7Gr5secJXPkxBeuYUhmp8TYsuY";
+    WxUserCardListResult result = this.wxService.getCardService().getUserCardList(openId, cardId);
+    assertTrue(result.isSuccess());
+    System.out.println(result);
   }
 }

@@ -596,6 +596,11 @@ public interface WxMpApiUrl {
      * 设置自助核销接口
      */
     CARD_SELF_CONSUME_CELL_SET(API_DEFAULT_HOST_URL, "/card/selfconsumecell/set"),
+
+    /**
+     * 获取用户已领取卡券接口
+     */
+    CARD_USER_CARD_LIST(API_DEFAULT_HOST_URL, "/card/user/getcardlist"),
     ;
 
     private String prefix;
@@ -997,7 +1002,32 @@ public interface WxMpApiUrl {
     /**
      * 查看指定文章的评论数据.
      */
-    LIST(API_DEFAULT_HOST_URL, "/cgi-bin/comment/list");
+    LIST(API_DEFAULT_HOST_URL, "/cgi-bin/comment/list"),
+
+    /**
+     * 将评论标记精选.
+     */
+    MARK_ELECT(API_DEFAULT_HOST_URL, "/cgi-bin/comment/markelect"),
+
+    /**
+     * 将评论取消精选.
+     */
+    UNMARK_ELECT(API_DEFAULT_HOST_URL, "/cgi-bin/comment/unmarkelect"),
+
+    /**
+     * 删除评论.
+     */
+    DELETE(API_DEFAULT_HOST_URL, "/cgi-bin/comment/delete"),
+
+    /**
+     * 回复评论.
+     */
+    REPLY_ADD(API_DEFAULT_HOST_URL, "/cgi-bin/comment/reply/add"),
+
+    /**
+     * 删除回复.
+     */
+    REPLY_DELETE(API_DEFAULT_HOST_URL, "/cgi-bin/comment/reply/delete");
 
     private String prefix;
     private String path;
@@ -1052,4 +1082,78 @@ public interface WxMpApiUrl {
     }
   }
 
+  @AllArgsConstructor
+  enum Invoice implements WxMpApiUrl {
+
+    /**
+     * 获取用户开票授权地址
+     */
+    GET_AUTH_URL(API_DEFAULT_HOST_URL, "/card/invoice/getauthurl"),
+
+    /**
+     * 获取用户开票授权信息
+     */
+    GET_AUTH_DATA(API_DEFAULT_HOST_URL, "/card/invoice/getauthdata"),
+
+    /**
+     * 拒绝为用户开票
+     */
+    REJECT_INSERT(API_DEFAULT_HOST_URL, "/card/invoice/rejectinsert"),
+
+    /**
+     * 开票
+     */
+    MAKE_OUT_INVOICE(API_DEFAULT_HOST_URL, "/card/invoice/makeoutinvoice"),
+
+    /**
+     * 发票冲红
+     */
+    CLEAR_OUT_INVOICE(API_DEFAULT_HOST_URL, "/card/invoice/clearoutinvoice"),
+
+    /**
+     * 查询发票信息
+     */
+    QUERY_INVOICE_INFO(API_DEFAULT_HOST_URL, "/card/invoice/queryinvoceinfo"),
+
+    /**
+     * 设置商户信息联系
+     */
+    SET_CONTACT_SET_BIZ_ATTR(API_DEFAULT_HOST_URL, "/card/invoice/setbizattr?action=set_contact"),
+
+    /**
+     * 获取商户联系信息
+     */
+    GET_CONTACT_SET_BIZ_ATTR(API_DEFAULT_HOST_URL, "/card/invoice/setbizattr?action=get_contact"),
+
+    /**
+     * 设置授权页面字段
+     */
+    SET_AUTH_FIELD_SET_BIZ_ATTR(API_DEFAULT_HOST_URL, "/card/invoice/setbizattr?action=set_auth_field"),
+
+    /**
+     * 获取授权页面字段
+     */
+    GET_AUTH_FIELD_SET_BIZ_ATTR(API_DEFAULT_HOST_URL, "/card/invoice/setbizattr?action=get_auth_field"),
+
+    /**
+     * 设置关联商户
+     */
+    SET_PAY_MCH_SET_BIZ_ATTR(API_DEFAULT_HOST_URL, "/card/invoice/setbizattr?action=set_pay_mch"),
+
+    /**
+     * 获取关联商户
+     */
+    GET_PAY_MCH_SET_BIZ_ATTR(API_DEFAULT_HOST_URL, "/card/invoice/setbizattr?action=get_pay_mch"),
+    ;
+    private String prefix;
+    private String path;
+
+    @Override
+    public String getUrl(WxMpConfigStorage config) {
+      if (null == config) {
+        return buildUrl(null, prefix, path);
+      }
+      return buildUrl(config.getHostConfig(), prefix, path);
+    }
+  }
 }
